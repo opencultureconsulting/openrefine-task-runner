@@ -1,0 +1,70 @@
+version: '3'
+
+tasks:
+  main:
+    desc: Removing duplicates in a very small test dataset
+    cmds:
+      - task: refine
+      - task: :check # check OpenRefine log for any warnings and exit on error
+        vars: {PROJECT: '{{splitList ":" .TASK | first}}'} 
+
+  refine:
+    vars:
+      PORT: 3334 # assign a different port for each project
+      RAM: 2048M # maximum RAM for OpenRefine java heap space
+      PROJECT: '{{splitList ":" .TASK | first}}'
+    cmds: # tasks prepended with ":" are defined in Taskfile.yml
+      - task: :start
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
+      - task: import
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+      - task: apply
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+      - task: export
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+      - task: stats
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+      - task: :stop
+        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+    sources:
+      - input/**
+      - config/**
+    generates:
+      - output/openrefine.log
+      - output/{{.PROJECT}}.openrefine.tar.gz
+    ignore_error: true # workaround to avoid an orphaned Java process on error https://github.com/go-task/task/issues/141
+
+  import:
+    dir: input
+    cmds:
+      - | # import file
+        ../../openrefine/client -P {{.PORT}} \
+        --create duplicates.csv \
+        --encoding UTF-8 \
+        --projectName {{.PROJECT}}
+    ignore_error: true # workaround
+
+  apply:
+    dir: config
+    cmds:
+      - | # apply transformation rules
+        ../../openrefine/client -P {{.PORT}} {{.PROJECT}} \
+        --apply duplicates-deletion.json
+    ignore_error: true # workaround
+
+  export:
+    dir: output
+    cmds:
+      - | # export to file; use readlink to log full path to output file
+        ../../openrefine/client -P {{.PORT}} {{.PROJECT}} \
+        --output "$(readlink -m deduped.xls)"
+    ignore_error: true # workaround
+
+  stats:
+    cmds:
+      - ps -o start,etime,%mem,%cpu,rss -p $(lsof -t -i:{{.PORT}}) # print allocated system resources
+    ignore_error: true # workaround
+
+  default: # enable standalone execution (running `task` in project directory)
+    cmds:
+      - PROJECT="${PWD##*/}:main" && cd .. && task "$PROJECT"
