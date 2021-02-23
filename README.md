@@ -127,7 +127,6 @@ Please file an [issue](https://github.com/opencultureconsulting/openrefine-task-
 ## To do
 
 - [ ] Codacy badge (needs to be public)
-- [ ] add client log messages to openrefine.log (tee -a)
 - [ ] differentiate examples
   - [ ] example for loading multiple input files by providing a zip archive
   - [ ] example for download "fresh" input data as a dependent task and generating archives/diffs

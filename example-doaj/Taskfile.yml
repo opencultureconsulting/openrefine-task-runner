@@ -23,17 +23,22 @@ tasks:
         ../openrefine/client -P {{.PORT}}
         --create "$(readlink -m input/doaj-article-sample.csv)"
         --projectName {{.PROJECT}}
+        > >(tee -a openrefine.log) 2>&1
       - > # apply transformation rules
         ../openrefine/client -P {{.PORT}} {{.PROJECT}}
         --apply config/doaj-openrefine.json
+        > >(tee -a openrefine.log) 2>&1
       - > # export to file
         mkdir -p output &&
         ../openrefine/client -P {{.PORT}} {{.PROJECT}}
         --output "$(readlink -m output/doaj-results.tsv)"
+        > >(tee -a openrefine.log) 2>&1
       - | # print allocated system resources
         PID="$(lsof -t -i:{{.PORT}})"
-        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
-        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM" \
+          > >(tee -a openrefine.log)
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
+          > >(tee -a openrefine.log)
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
         vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
