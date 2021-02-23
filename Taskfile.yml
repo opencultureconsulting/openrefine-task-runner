@@ -1,4 +1,4 @@
-# https://github.com/opencultureconsulting/openrefine-tasks
+# https://github.com/opencultureconsulting/openrefine-task-runner
 
 version: '3'
 
@@ -6,10 +6,16 @@ includes:
   example-doaj: example-doaj
   example-duplicates: example-duplicates
   example-powerhouse: example-powerhouse
-  # add your project here
+  # add the directory name of your project here
 
 silent: true
 output: prefixed
+
+env:
+  OPENREFINE:
+    sh: readlink -m openrefine/refine
+  CLIENT:
+    sh: readlink -m openrefine/client
 
 tasks:
   default:
@@ -18,7 +24,7 @@ tasks:
       - task: example-doaj:refine
       - task: example-duplicates:refine
       - task: example-powerhouse:refine
-      # add your project here
+      # add the directory name of your project here
     cmds:
       - task: check
 
@@ -44,16 +50,16 @@ tasks:
         && chmod +x openrefine/client
 
   start:
-    dir: ./{{.PROJECT}}
+    dir: ./{{.DIR}}
     cmds:
       - | # check install and delete any temporary OpenRefine files
-        if [ ! -f "../openrefine/refine" ]; then
+        if [ ! -f "$OPENREFINE" ]; then
           echo 1>&2 "OpenRefine missing; try task install"; exit 1
         fi
         rm -rf ./*.project* workspace.json openrefine.log
       - > # launch OpenRefine with specific data directory and redirect its output to a log file
-        ../openrefine/refine -v warn -p {{.PORT}} -m {{.RAM}}
-        -d ../{{.PROJECT}}
+        "$OPENREFINE" -v warn -p {{.PORT}} -m {{.RAM}}
+        -d ../{{.DIR}}
         >> openrefine.log 2>&1 &
       - | # wait until OpenRefine API is available
         timeout 30s bash -c "until
@@ -62,7 +68,7 @@ tasks:
         done"
 
   stop:
-    dir: ./{{.PROJECT}}
+    dir: ./{{.DIR}}
     cmds:
       - | # shut down OpenRefine
         PID=$(lsof -t -i:{{.PORT}})
@@ -70,14 +76,14 @@ tasks:
         while ps -p $PID > /dev/null; do sleep 1; done
       - > # archive the OpenRefine project and delete temporary files
         tar cfz
-        {{.PROJECT}}.openrefine.tar.gz
-        -C $(grep -l {{.PROJECT}} *.project/metadata.json | cut -d '/' -f 1)
+        "{{.PROJECT}}.openrefine.tar.gz"
+        -C $(grep -l "{{.PROJECT}}" *.project/metadata.json | cut -d '/' -f 1)
         .
         && rm -rf ./*.project* workspace.json
 
   check:
     desc: check OpenRefine log for any warnings and exit on error
-    dir: ./{{.PROJECT}}
+    dir: ./{{.DIR}}
     cmds:
       - | # find log file(s) and check for "exception" or "error"
         if grep -i 'exception\|error' $(find . -name openrefine.log); then

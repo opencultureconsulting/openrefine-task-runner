@@ -3,34 +3,36 @@ version: '3'
 tasks:
   main:
     desc: Library Carpentry Lesson covering DOAJ
+    vars: {DIR: '{{splitList ":" .TASK | first}}'}
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
-        vars: {PROJECT: '{{splitList ":" .TASK | first}}'}
+        vars: {DIR: '{{.DIR}}'}
 
   refine:
-    dir: ./{{.PROJECT}}
+    dir: ./{{.DIR}}
     vars:
-      PORT: 3335 # assign a different port for each project
+      PORT: 3334 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
+      DIR: '{{splitList ":" .TASK | first}}'
       PROJECT: '{{splitList ":" .TASK | first}}'
     deps: # will be executed each run independent of up-to-date check
       - task: download
     cmds:
       - task: :start # launch OpenRefine
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
+        vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
       - > # import file
-        ../openrefine/client -P {{.PORT}}
+        "$CLIENT" -P {{.PORT}}
         --create "$(readlink -m input/doaj-article-sample.csv)"
         --projectName {{.PROJECT}}
         > >(tee -a openrefine.log) 2>&1
       - > # apply transformation rules
-        ../openrefine/client -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
         --apply config/doaj-openrefine.json
         > >(tee -a openrefine.log) 2>&1
       - > # export to file
         mkdir -p output &&
-        ../openrefine/client -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
         --output "$(readlink -m output/doaj-results.tsv)"
         > >(tee -a openrefine.log) 2>&1
       - | # print allocated system resources
@@ -40,7 +42,7 @@ tasks:
         echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
           > >(tee -a openrefine.log)
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+        vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
       - input/**
       - config/**
@@ -52,7 +54,8 @@ tasks:
                        # https://github.com/go-task/task/issues/141
 
   download:
-    dir: '{{splitList ":" .TASK | first}}'
+    dir: ./{{.DIR}}
+    vars: {DIR: '{{splitList ":" .TASK | first}}'}
     cmds:
       - mkdir -p input config
       - > # Download input
@@ -64,4 +67,4 @@ tasks:
 
   default: # enable standalone execution (running `task` in project directory)
     cmds:
-      - PROJECT="${PWD##*/}:main" && cd .. && task "$PROJECT"
+      - DIR="${PWD##*/}:main" && cd .. && task "$DIR"
