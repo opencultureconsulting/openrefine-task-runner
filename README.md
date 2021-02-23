@@ -1,5 +1,7 @@
 # OpenRefine Task Runner (💎+🤖)
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard)
+
 Templates for OpenRefine batch processing (import, transform, export) using the task runner [go-task](https://github.com/go-task/task) and the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) to control OpenRefine via [its HTTP API](https://docs.openrefine.org/technical-reference/openrefine-api). 
 
 ## Features
@@ -126,7 +128,6 @@ Please file an [issue](https://github.com/opencultureconsulting/openrefine-task-
 
 ## To do
 
-- [ ] Codacy badge (needs to be public)
 - [ ] differentiate examples
   - [ ] example for loading multiple input files by providing a zip archive
   - [ ] example for download "fresh" input data as a dependent task and generating archives/diffs
