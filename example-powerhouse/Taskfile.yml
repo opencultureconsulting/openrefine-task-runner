@@ -6,73 +6,57 @@ tasks:
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
-        vars: {PROJECT: '{{splitList ":" .TASK | first}}'} 
+        vars: {PROJECT: '{{splitList ":" .TASK | first}}'}
 
   refine:
+    dir: ./{{.PROJECT}}
     vars:
       PORT: 3336 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
       PROJECT: '{{splitList ":" .TASK | first}}'
     deps: # will be executed each run independent of up-to-date check
       - task: download
-    cmds: # tasks prepended with ":" are defined in Taskfile.yml
-      - task: :start
+    cmds:
+      - task: :start # launch OpenRefine
         vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
-      - task: import
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
-      - task: apply
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
-      - task: export
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
-      - task: stats
-        vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
-      - task: :stop
+      - > # import file
+        ../openrefine/client -P {{.PORT}}
+        --create "$(readlink -m input/phm-collection.tsv)"
+        --processQuotes false
+        --guessCellValueTypes true
+        --projectName {{.PROJECT}}
+      - > # apply transformation rules
+        ../openrefine/client -P {{.PORT}} {{.PROJECT}}
+        --apply config/phm-transform.json
+      - > # export to file
+        mkdir -p output &&
+        ../openrefine/client -P {{.PORT}} {{.PROJECT}}
+        --output "$(readlink -m output/phm-results.tsv)"
+      - | # print allocated system resources
+        PID="$(lsof -t -i:{{.PORT}})"
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
+      - task: :stop # shut down OpenRefine and archive the OpenRefine project
         vars: {PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
       - input/**
       - config/**
     generates:
-      - output/openrefine.log
-      - output/{{.PROJECT}}.openrefine.tar.gz
-    ignore_error: true # workaround to avoid an orphaned Java process on error https://github.com/go-task/task/issues/141
-
+      - openrefine.log
+      - ./{{.PROJECT}}.openrefine.tar.gz
+      - output/**
+    ignore_error: true # workaround to avoid an orphaned Java process on error
+                       # https://github.com/go-task/task/issues/141
   download:
+    dir: '{{splitList ":" .TASK | first}}'
     cmds:
       - mkdir -p input config
-      - wget --no-verbose -O input/phm-collection.tsv https://github.com/opencultureconsulting/openrefine-batch/raw/master/examples/powerhouse-museum/input/phm-collection.tsv
-      - wget --no-verbose -O config/phm-transform.json https://github.com/opencultureconsulting/openrefine-batch/raw/master/examples/powerhouse-museum/config/phm-transform.json
-
-  import:
-    dir: input
-    cmds:
-      - | # import file
-        ../../openrefine/client -P {{.PORT}} \
-        --create phm-collection.tsv \
-        --processQuotes false \
-        --guessCellValueTypes true \
-        --projectName {{.PROJECT}}
-    ignore_error: true # workaround
-
-  apply:
-    dir: config
-    cmds:
-      - | # apply transformation rules
-        ../../openrefine/client -P {{.PORT}} {{.PROJECT}} \
-        --apply phm-transform.json
-    ignore_error: true # workaround
-
-  export:
-    dir: output
-    cmds:
-      - | # export to file; use readlink to log full path to output file
-        ../../openrefine/client -P {{.PORT}} {{.PROJECT}} \
-        --output "$(readlink -m phm-results.tsv)"
-    ignore_error: true # workaround
-
-  stats:
-    cmds:
-      - ps -o start,etime,%mem,%cpu,rss -p $(lsof -t -i:{{.PORT}}) # print allocated system resources
-    ignore_error: true # workaround
+      - > # Download input
+        wget --no-verbose -O input/phm-collection.tsv
+        https://github.com/opencultureconsulting/openrefine-batch/raw/master/examples/powerhouse-museum/input/phm-collection.tsv
+      - > # Download config
+        wget --no-verbose -O config/phm-transform.json
+        https://github.com/opencultureconsulting/openrefine-batch/raw/master/examples/powerhouse-museum/config/phm-transform.json
 
   default: # enable standalone execution (running `task` in project directory)
     cmds:
