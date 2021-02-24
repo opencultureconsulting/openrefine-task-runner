@@ -56,11 +56,11 @@ tasks:
         if [ ! -f "$OPENREFINE" ]; then
           echo 1>&2 "OpenRefine missing; try task install"; exit 1
         fi
-        rm -rf ./*.project* workspace.json openrefine.log
+        rm -rf ./*.project* workspace.json "{{.PROJECT}}.log"
       - > # launch OpenRefine with specific data directory and redirect its output to a log file
         "$OPENREFINE" -v warn -p {{.PORT}} -m {{.RAM}}
         -d ../{{.DIR}}
-        >> openrefine.log 2>&1 &
+        >> "{{.PROJECT}}.log" 2>&1 &
       - | # wait until OpenRefine API is available
         timeout 30s bash -c "until
           wget -q -O - http://localhost:{{.PORT}} | cat | grep -q -o OpenRefine
@@ -86,6 +86,6 @@ tasks:
     dir: ./{{.DIR}}
     cmds:
       - | # find log file(s) and check for "exception" or "error"
-        if grep -i 'exception\|error' $(find . -name openrefine.log); then
+        if grep -i 'exception\|error' $(find . -name *.log); then
           echo 1>&2 "log contains warnings!"; exit 1
         fi

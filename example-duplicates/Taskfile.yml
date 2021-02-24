@@ -17,23 +17,23 @@ tasks:
       PROJECT: duplicates
       PORT: 3335 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      LOG: '>(tee -a openrefine.log) 2>&1'
+      LOG: '>(tee -a "{{.PROJECT}}.log") 2>&1'
     cmds:
       - task: :start # launch OpenRefine
-        vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
+        vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
       - > # import file
         "$CLIENT" -P {{.PORT}}
         --create "$(readlink -m input/duplicates.csv)"
         --encoding UTF-8
-        --projectName {{.PROJECT}}
+        --projectName "{{.PROJECT}}"
         > {{.LOG}}
       - > # apply transformation rules
-        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --apply config/duplicates-deletion.json
         > {{.LOG}}
       - > # export to file
         mkdir -p output &&
-        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --output "$(readlink -m output/deduped.xls)"
         > {{.LOG}}
       - | # print allocated system resources

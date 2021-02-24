@@ -17,24 +17,24 @@ tasks:
       PROJECT: doaj
       PORT: 3334 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      LOG: '>(tee -a openrefine.log) 2>&1'
+      LOG: '>(tee -a "{{.PROJECT}}.log") 2>&1'
     deps: # will be executed each run independent of up-to-date check
       - task: download
     cmds:
       - task: :start # launch OpenRefine
-        vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
+        vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
       - > # import file
         "$CLIENT" -P {{.PORT}}
         --create "$(readlink -m input/doaj-article-sample.csv)"
-        --projectName {{.PROJECT}}
+        --projectName "{{.PROJECT}}"
         > {{.LOG}}
       - > # apply transformation rules
-        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --apply config/doaj-openrefine.json
         > {{.LOG}}
       - > # export to file
         mkdir -p output &&
-        "$CLIENT" -P {{.PORT}} {{.PROJECT}}
+        "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --output "$(readlink -m output/doaj-results.tsv)"
         > {{.LOG}}
       - | # print allocated system resources
