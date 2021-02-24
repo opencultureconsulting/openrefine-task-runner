@@ -17,6 +17,7 @@ tasks:
       PROJECT: duplicates
       PORT: 3335 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
+      LOG: '>(tee -a openrefine.log) 2>&1'
     cmds:
       - task: :start # launch OpenRefine
         vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
@@ -25,22 +26,20 @@ tasks:
         --create "$(readlink -m input/duplicates.csv)"
         --encoding UTF-8
         --projectName {{.PROJECT}}
-        > >(tee -a openrefine.log) 2>&1
+        > {{.LOG}}
       - > # apply transformation rules
         "$CLIENT" -P {{.PORT}} {{.PROJECT}}
         --apply config/duplicates-deletion.json
-        > >(tee -a openrefine.log) 2>&1
+        > {{.LOG}}
       - > # export to file
         mkdir -p output &&
         "$CLIENT" -P {{.PORT}} {{.PROJECT}}
         --output "$(readlink -m output/deduped.xls)"
-        > >(tee -a openrefine.log) 2>&1
+        > {{.LOG}}
       - | # print allocated system resources
         PID="$(lsof -t -i:{{.PORT}})"
-        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM" \
-          > >(tee -a openrefine.log)
-        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
-          > >(tee -a openrefine.log)
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM" > {{.LOG}}
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" > {{.LOG}}
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
         vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
@@ -48,7 +47,6 @@ tasks:
       - input/**
       - config/**
     generates:
-      - openrefine.log
       - ./{{.PROJECT}}.openrefine.tar.gz
       - output/**
     ignore_error: true # workaround to avoid an orphaned Java process on error
