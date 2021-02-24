@@ -3,7 +3,8 @@ version: '3'
 tasks:
   main:
     desc: Removing duplicates in a very small test dataset
-    vars: {DIR: '{{splitList ":" .TASK | first}}'}
+    vars:
+      DIR: '{{splitList ":" .TASK | first}}'
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
@@ -12,10 +13,10 @@ tasks:
   refine:
     dir: ./{{.DIR}}
     vars:
+      DIR: '{{splitList ":" .TASK | first}}'
+      PROJECT: duplicates
       PORT: 3335 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      DIR: '{{splitList ":" .TASK | first}}'
-      PROJECT: '{{splitList ":" .TASK | first}}'
     cmds:
       - task: :start # launch OpenRefine
         vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
@@ -43,6 +44,7 @@ tasks:
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
         vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
+      - Taskfile.yml
       - input/**
       - config/**
     generates:

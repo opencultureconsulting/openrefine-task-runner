@@ -3,7 +3,8 @@ version: '3'
 tasks:
   main:
     desc: Library Carpentry Lesson covering DOAJ
-    vars: {DIR: '{{splitList ":" .TASK | first}}'}
+    vars:
+      DIR: '{{splitList ":" .TASK | first}}'
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
@@ -12,10 +13,10 @@ tasks:
   refine:
     dir: ./{{.DIR}}
     vars:
+      DIR: '{{splitList ":" .TASK | first}}'
+      PROJECT: doaj
       PORT: 3334 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      DIR: '{{splitList ":" .TASK | first}}'
-      PROJECT: '{{splitList ":" .TASK | first}}'
     deps: # will be executed each run independent of up-to-date check
       - task: download
     cmds:
@@ -44,6 +45,7 @@ tasks:
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
         vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
     sources:
+      - Taskfile.yml
       - input/**
       - config/**
     generates:
@@ -55,7 +57,8 @@ tasks:
 
   download:
     dir: ./{{.DIR}}
-    vars: {DIR: '{{splitList ":" .TASK | first}}'}
+    vars:
+      DIR: '{{splitList ":" .TASK | first}}'
     cmds:
       - mkdir -p input config
       - > # Download input

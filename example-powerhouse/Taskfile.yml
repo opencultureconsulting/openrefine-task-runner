@@ -3,7 +3,8 @@ version: '3'
 tasks:
   main:
     desc: Powerhouse Museum Tutorial
-    vars: {DIR: '{{splitList ":" .TASK | first}}'}
+    vars:
+      DIR: '{{splitList ":" .TASK | first}}'
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
@@ -12,10 +13,10 @@ tasks:
   refine:
     dir: ./{{.DIR}}
     vars:
+      DIR: '{{splitList ":" .TASK | first}}'
+      PROJECT: phm
       PORT: 3336 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      DIR: '{{splitList ":" .TASK | first}}'
-      PROJECT: '{{splitList ":" .TASK | first}}'
     deps: # will be executed each run independent of up-to-date check
       - task: download
     cmds:
@@ -44,8 +45,9 @@ tasks:
         echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
           > >(tee -a openrefine.log)
       - task: :stop # shut down OpenRefine and archive the OpenRefine project
-        vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}'}
+        vars: {DIR: '{{.DIR}}', PORT: '{{.PORT}}', PROJECT: '{{.PROJECT}}'}
     sources:
+      - Taskfile.yml
       - input/**
       - config/**
     generates:
@@ -56,7 +58,8 @@ tasks:
                        # https://github.com/go-task/task/issues/141
   download:
     dir: ./{{.DIR}}
-    vars: {DIR: '{{splitList ":" .TASK | first}}'}
+    vars:
+      DIR: '{{splitList ":" .TASK | first}}'
     cmds:
       - mkdir -p input config
       - > # Download input
