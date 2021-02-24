@@ -86,6 +86,6 @@ tasks:
     dir: ./{{.DIR}}
     cmds:
       - | # find log file(s) and check for "exception" or "error"
-        if grep -i 'exception\|error' $(find . -name *.log); then
+        if grep -i 'exception\|error' $(find . -name '*.log'); then
           echo 1>&2 "log contains warnings!"; exit 1
         fi
