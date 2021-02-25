@@ -87,7 +87,9 @@ tasks:
     dir: ./{{.DIR}}
     cmds:
       - | # shut down OpenRefine immediately to save time and disk space
-        kill -9 $(lsof -t -i:{{.PORT}})
+        PID=$(lsof -t -i:{{.PORT}})
+        kill -9 $PID
+        while ps -p $PID > /dev/null; do sleep 1; done
       - rm -rf ./*.project* workspace.json # delete temporary files
 
   check:
