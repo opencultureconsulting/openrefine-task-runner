@@ -31,8 +31,8 @@ tasks:
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --apply config/duplicates-deletion.json
         > {{.LOG}}
+      - mkdir -p output
       - > # export to file
-        mkdir -p output &&
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --output "$(readlink -m output/deduped.xls)"
         > {{.LOG}}

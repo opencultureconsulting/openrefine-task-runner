@@ -37,9 +37,9 @@ tasks:
       - > # download OpenRefine archive
         wget --no-verbose -O openrefine.tar.gz
         https://github.com/OpenRefine/OpenRefine/releases/download/3.4.1/openrefine-linux-3.4.1.tar.gz
-      - > # install OpenRefine into subdirectory openrefine
+      - | # install OpenRefine into subdirectory openrefine
         tar -xzf openrefine.tar.gz -C openrefine --strip 1
-        && rm openrefine.tar.gz
+        rm openrefine.tar.gz
       - | # optimize OpenRefine for batch processing
         sed -i 's/cd `dirname $0`/cd "$(dirname "$0")"/' "openrefine/refine" # fix path issue in OpenRefine startup file
         sed -i '$ a JAVA_OPTIONS=-Drefine.headless=true' "openrefine/refine.ini" # do not try to open OpenRefine in browser
@@ -47,16 +47,18 @@ tasks:
       - > # download openrefine-client into subdirectory openrefine
         wget --no-verbose -O openrefine/client
         https://github.com/opencultureconsulting/openrefine-client/releases/download/v0.3.10/openrefine-client_0-3-10_linux
-        && chmod +x openrefine/client
+      - chmod +x openrefine/client # make client executable
 
   start:
     dir: ./{{.DIR}}
     cmds:
-      - | # check install and delete any temporary OpenRefine files
+      - | # verify that OpenRefine is installed
         if [ ! -f "$OPENREFINE" ]; then
           echo 1>&2 "OpenRefine missing; try task install"; exit 1
         fi
-        rm -rf ./*.project* workspace.json "{{.PROJECT}}.log"
+      - | # delete temporary files and log file of previous run
+        rm -rf ./*.project* workspace.json
+        rm -rf "{{.PROJECT}}.log"
       - > # launch OpenRefine with specific data directory and redirect its output to a log file
         "$OPENREFINE" -v warn -p {{.PORT}} -m {{.RAM}}
         -d ../{{.DIR}}
@@ -70,16 +72,16 @@ tasks:
   stop:
     dir: ./{{.DIR}}
     cmds:
-      - | # shut down OpenRefine
+      - | # shut down OpenRefine gracefully
         PID=$(lsof -t -i:{{.PORT}})
         kill $PID
         while ps -p $PID > /dev/null; do sleep 1; done
-      - > # archive the OpenRefine project and delete temporary files
+      - > # archive the OpenRefine project
         tar cfz
         "{{.PROJECT}}.openrefine.tar.gz"
         -C $(grep -l "{{.PROJECT}}" *.project/metadata.json | cut -d '/' -f 1)
         .
-        && rm -rf ./*.project* workspace.json
+      - rm -rf ./*.project* workspace.json # delete temporary files
 
   check:
     desc: check OpenRefine log for any warnings and exit on error

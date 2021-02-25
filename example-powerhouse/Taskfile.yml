@@ -34,8 +34,8 @@ tasks:
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --apply config/phm-transform.json
         > {{.LOG}}
+      - mkdir -p output
       - > # export to file
-        mkdir -p output &&
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --output "$(readlink -m output/phm-results.tsv)"
         > {{.LOG}}

@@ -32,8 +32,8 @@ tasks:
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --apply config/doaj-openrefine.json
         > {{.LOG}}
+      - mkdir -p output
       - > # export to file
-        mkdir -p output &&
         "$CLIENT" -P {{.PORT}} "{{.PROJECT}}"
         --output "$(readlink -m output/doaj-results.tsv)"
         > {{.LOG}}
