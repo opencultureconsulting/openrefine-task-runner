@@ -128,12 +128,15 @@ Please file an [issue](https://github.com/opencultureconsulting/openrefine-task-
 
 ## To do
 
+- [ ] hide OpenRefine install by renaming directory to .openrefine
+- [ ] add kill task to save time by skipping storing an OpenRefine project archive
 - [ ] differentiate examples
   - [ ] example for loading multiple input files by providing a zip archive
   - [ ] example for download "fresh" input data as a dependent task and generating archives/diffs
   - [ ] example for applying multiple json files
   - [ ] example for templating xml and validation with xmllint
   - [ ] example for multiple projects in one directory/taskfile
+  - [ ] example for using kill task to save time and disk space
 - [ ] describe example datasets (and differences) with source code examples
 - [ ] elaborate how-to for developing tasks
   - [ ] document openrefine-client options and defaults (tables for input and output with file-format-specific defaults) including templating

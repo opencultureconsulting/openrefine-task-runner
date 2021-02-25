@@ -4,7 +4,7 @@ tasks:
   main:
     desc: Removing duplicates in a very small test dataset
     vars:
-      DIR: '{{splitList ":" .TASK | first}}'
+      DIR: '{{splitList ":" .TASK | first}}' # results in the task namespace, which is identical to the directory name
     cmds:
       - task: refine
       - task: :check # check OpenRefine log for any warnings and exit on error
@@ -17,7 +17,7 @@ tasks:
       PROJECT: duplicates
       PORT: 3335 # assign a different port for each project
       RAM: 2048M # maximum RAM for OpenRefine java heap space
-      LOG: '>(tee -a "{{.PROJECT}}.log") 2>&1'
+      LOG: '>(tee -a "{{.PROJECT}}.log") 2>&1' # be careful when making changes here, as the path to the log file should match the server log (see main task "start")
     cmds:
       - task: :start # launch OpenRefine
         vars: {DIR: '{{.DIR}}', PROJECT: '{{.PROJECT}}', PORT: '{{.PORT}}', RAM: '{{.RAM}}'}
@@ -49,8 +49,7 @@ tasks:
     generates:
       - ./{{.PROJECT}}.openrefine.tar.gz
       - output/**
-    ignore_error: true # workaround to avoid an orphaned Java process on error
-                       # https://github.com/go-task/task/issues/141
+    ignore_error: true # workaround to avoid an orphaned Java process on error https://github.com/go-task/task/issues/141
 
   default: # enable standalone execution (running `task` in project directory)
     cmds:

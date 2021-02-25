@@ -1,7 +1,7 @@
 .task
 openrefine
 */output
-*/openrefine.log
+*/*.log
 */*.openrefine.tar.gz
 example-doaj/input
 example-doaj/config
