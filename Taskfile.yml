@@ -83,6 +83,13 @@ tasks:
         .
       - rm -rf ./*.project* workspace.json # delete temporary files
 
+  kill:
+    dir: ./{{.DIR}}
+    cmds:
+      - | # shut down OpenRefine immediately to save time and disk space
+        kill -9 $(lsof -t -i:{{.PORT}})
+      - rm -rf ./*.project* workspace.json # delete temporary files
+
   check:
     desc: check OpenRefine log for any warnings and exit on error
     dir: ./{{.DIR}}
