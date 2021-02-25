@@ -13,9 +13,9 @@ output: prefixed
 
 env:
   OPENREFINE:
-    sh: readlink -m openrefine/refine
+    sh: readlink -m .openrefine/refine
   CLIENT:
-    sh: readlink -m openrefine/client
+    sh: readlink -m .openrefine/client
 
 tasks:
   default:
@@ -29,25 +29,25 @@ tasks:
       - task: check
 
   install:
-    desc: (re)install OpenRefine and openrefine-client into subdirectory openrefine
+    desc: (re)install OpenRefine and openrefine-client into subdirectory .openrefine
     cmds:
       - | # delete existing install and recreate folder
-        rm -rf openrefine
-        mkdir -p openrefine
+        rm -rf .openrefine
+        mkdir -p .openrefine
       - > # download OpenRefine archive
         wget --no-verbose -O openrefine.tar.gz
         https://github.com/OpenRefine/OpenRefine/releases/download/3.4.1/openrefine-linux-3.4.1.tar.gz
-      - | # install OpenRefine into subdirectory openrefine
-        tar -xzf openrefine.tar.gz -C openrefine --strip 1
+      - | # install OpenRefine into subdirectory .openrefine
+        tar -xzf openrefine.tar.gz -C .openrefine --strip 1
         rm openrefine.tar.gz
       - | # optimize OpenRefine for batch processing
-        sed -i 's/cd `dirname $0`/cd "$(dirname "$0")"/' "openrefine/refine" # fix path issue in OpenRefine startup file
-        sed -i '$ a JAVA_OPTIONS=-Drefine.headless=true' "openrefine/refine.ini" # do not try to open OpenRefine in browser
-        sed -i 's/#REFINE_AUTOSAVE_PERIOD=60/REFINE_AUTOSAVE_PERIOD=1440/' "openrefine/refine.ini" # set autosave period from 5 minutes to 25 hours
-      - > # download openrefine-client into subdirectory openrefine
-        wget --no-verbose -O openrefine/client
+        sed -i 's/cd `dirname $0`/cd "$(dirname "$0")"/' ".openrefine/refine" # fix path issue in OpenRefine startup file
+        sed -i '$ a JAVA_OPTIONS=-Drefine.headless=true' ".openrefine/refine.ini" # do not try to open OpenRefine in browser
+        sed -i 's/#REFINE_AUTOSAVE_PERIOD=60/REFINE_AUTOSAVE_PERIOD=1440/' ".openrefine/refine.ini" # set autosave period from 5 minutes to 25 hours
+      - > # download openrefine-client into subdirectory .openrefine
+        wget --no-verbose -O .openrefine/client
         https://github.com/opencultureconsulting/openrefine-client/releases/download/v0.3.10/openrefine-client_0-3-10_linux
-      - chmod +x openrefine/client # make client executable
+      - chmod +x .openrefine/client # make client executable
 
   start:
     dir: ./{{.DIR}}

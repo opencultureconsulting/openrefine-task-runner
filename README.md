@@ -128,7 +128,6 @@ Please file an [issue](https://github.com/opencultureconsulting/openrefine-task-
 
 ## To do
 
-- [ ] hide OpenRefine install by renaming directory to .openrefine
 - [ ] differentiate examples
   - [ ] example for loading multiple input files by providing a zip archive
   - [ ] example for download "fresh" input data as a dependent task and generating archives/diffs

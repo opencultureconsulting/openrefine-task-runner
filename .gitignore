@@ -1,5 +1,5 @@
 .task
-openrefine
+.openrefine
 */output
 */*.log
 */*.openrefine.tar.gz
