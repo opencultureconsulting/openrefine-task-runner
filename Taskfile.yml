@@ -65,7 +65,7 @@ tasks:
         >> "{{.PROJECT}}.log" 2>&1 &
       - | # wait until OpenRefine API is available
         timeout 30s bash -c "until
-          wget -q -O - http://localhost:{{.PORT}} | cat | grep -q -o OpenRefine
+          wget -q -O - -o /dev/null http://localhost:{{.PORT}} | cat | grep -q -o OpenRefine
           do sleep 1
         done"
 
