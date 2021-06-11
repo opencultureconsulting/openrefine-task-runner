@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+# Install bash_kernel https://github.com/takluyver/bash_kernel
+python -m bash_kernel.install
+
+# Install go-task https://github.com/go-task/task
+wget -q https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+tar -xzf task_linux_amd64.tar.gz
+rm task_linux_amd64.tar.gz
+mkdir -p $HOME/.local/bin
+mv task $HOME/.local/bin/
+
+# Run install task to download OpenRefine and openrefine-client
+task install
