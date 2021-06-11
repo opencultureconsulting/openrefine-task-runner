@@ -1,6 +1,6 @@
 # OpenRefine Task Runner (💎+🤖)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/binder?urlpath=lab/tree/demo.ipynb)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/main?urlpath=lab/tree/demo.ipynb)
 
 Templates for OpenRefine batch processing (import, transform, export) using the task runner [go-task](https://github.com/go-task/task) and the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) to control OpenRefine via [its HTTP API](https://docs.openrefine.org/technical-reference/openrefine-api). 
 
@@ -43,7 +43,7 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 ## Demo via binder
 
-[![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/binder?urlpath=lab/tree/demo.ipynb)
+[![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/main?urlpath=lab/tree/demo.ipynb)
 
 - free to use on-demand server with Jupyterlab and Bash Kernel
 - OpenRefine, openrefine-client and go-task [preinstalled](binder/postBuild)
