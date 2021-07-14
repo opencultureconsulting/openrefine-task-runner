@@ -11,7 +11,7 @@ jobs:
     - name: install go-task 3.2.2
       run: |
         wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
-        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
+        sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
@@ -37,7 +37,7 @@ jobs:
     - name: install go-task 3.2.2
       run: |
         wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
-        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
+        sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
@@ -63,7 +63,7 @@ jobs:
     - name: install go-task 3.2.2
       run: |
         wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
-        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
+        sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
