@@ -10,9 +10,9 @@ jobs:
     - uses: actions/checkout@v2
     - name: install go-task 3.2.2
       run: |
-        echo $GITHUB_PATH
+        echo "$PATH"
         wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
-        tar -xzf task.tar.gz -C ~/.bin task && rm task.tar.gz
+        tar -xzf task.tar.gz -C ~/usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
