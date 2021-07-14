@@ -14,13 +14,13 @@ jobs:
         sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
     - name: install OpenRefine and openrefine-client
       run: task install
-    - name: run task 
-      run: task $GITHUB_JOB
+    - name: run task $GITHUB_JOB
+      run: task "$GITHUB_JOB:main"
     - uses: actions/upload-artifact@v2
       if: always()
       with:
         name: OpenRefine project(s)
-        path: $GITHUB_JOB/$GITHUB_JOB.openrefine.tar.gz
+        path: "$GITHUB_JOB/$GITHUB_JOB.openrefine.tar.gz"
     - name: commit and push if output changed
       run: |-
         git config user.name "Automated"
