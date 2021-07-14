@@ -1,0 +1,81 @@
+name: all-tasks # available as environment variable $GITHUB_WORKFLOW
+
+on:
+  workflow_dispatch: # allows you to run this workflow manually from the Actions tab
+
+jobs:
+  example-doaj: # available as environment variable $GITHUB_JOB
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2 # checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: install go-task
+      run: |
+        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
+        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+    - name: install OpenRefine and openrefine-client
+      run: task install
+    - name: run task
+      run: task "$GITHUB_JOB:main"
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: doaj data
+        path: "$GITHUB_JOB"
+    - name: commit and push if output changed # has nothing to do currently because of .gitignore
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add -A
+        git status
+        git commit -m "latest change: $(date -u)" || exit 0
+        git push
+  example-duplicates: # available as environment variable $GITHUB_JOB
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2 # checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: install go-task
+      run: |
+        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
+        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+    - name: install OpenRefine and openrefine-client
+      run: task install
+    - name: run task
+      run: task "$GITHUB_JOB:main"
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: duplicates data
+        path: "$GITHUB_JOB"
+    - name: commit and push if output changed # has nothing to do currently because of .gitignore
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add -A
+        git status
+        git commit -m "latest change: $(date -u)" || exit 0
+        git push
+  example-powerhouse: # available as environment variable $GITHUB_JOB
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2 # checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: install go-task
+      run: |
+        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
+        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+    - name: install OpenRefine and openrefine-client
+      run: task install
+    - name: run task
+      run: task "$GITHUB_JOB:main"
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: powerhouse data
+        path: "$GITHUB_JOB"
+    - name: commit and push if output changed # has nothing to do currently because of .gitignore
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add -A
+        git status
+        git commit -m "latest change: $(date -u)" || exit 0
+        git push
