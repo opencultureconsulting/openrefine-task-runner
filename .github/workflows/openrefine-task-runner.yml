@@ -1,0 +1,31 @@
+name: openrefine-task-runner # available as environment variable $GITHUB_WORKFLOW
+
+on:
+  workflow_dispatch: # allows you to run this workflow manually from the Actions tab
+
+jobs:
+  example-doaj: # available as environment variable $GITHUB_JOB
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2 # checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: install go-task
+      run: |
+        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
+        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+    - name: install OpenRefine and openrefine-client
+      run: task install
+    - name: run task 
+      run: task $GITHUB_JOB
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: OpenRefine project(s)
+        path: $GITHUB_JOB/$GITHUB_JOB.openrefine.tar.gz
+    - name: commit and push if output changed
+      run: |-
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add -A
+        git status
+        # git commit -m "latest change: $(date -u)" || exit 0
+        # git push
