@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task
+    - name: install go-task 3.2.2
       run: |
-        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
-        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+        echo $GITHUB_PATH
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        tar -xzf task.tar.gz -C ~/.bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
