@@ -10,9 +10,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: install go-task 3.2.2
       run: |
-        echo "$PATH"
         wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
-        tar -xzf task.tar.gz -C ~/usr/local/bin task && rm task.tar.gz
+        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
@@ -30,14 +29,15 @@ jobs:
         git status
         git commit -m "latest change: $(date -u)" || exit 0
         git push
+
   example-duplicates: # available as environment variable $GITHUB_JOB and context ${{ github.job }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task
+    - name: install go-task 3.2.2
       run: |
-        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
-        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
@@ -55,14 +55,15 @@ jobs:
         git status
         git commit -m "latest change: $(date -u)" || exit 0
         git push
+
   example-powerhouse: # available as environment variable $GITHUB_JOB and context ${{ github.job }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task
+    - name: install go-task 3.2.2
       run: |
-        wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
-        sudo apt-get install ./task_linux_amd64.deb && rm task_linux_amd64.deb
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        tar -xzf task.tar.gz -C ~/.local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
     - name: run task ${{ github.job }}
