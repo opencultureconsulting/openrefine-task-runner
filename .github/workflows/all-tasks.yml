@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task 3.2.2
+    - name: install go-task 3.10.0
       run: |
-        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.10.0/task_linux_amd64.tar.gz
         sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
@@ -35,9 +35,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task 3.2.2
+    - name: install go-task 3.10.0
       run: |
-        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.10.0/task_linux_amd64.tar.gz
         sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
@@ -62,9 +62,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - name: install go-task 3.2.2
+    - name: install go-task 3.10.0
       run: |
-        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.tar.gz
+        wget --no-verbose -O task.tar.gz https://github.com/go-task/task/releases/download/v3.10.0/task_linux_amd64.tar.gz
         sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
