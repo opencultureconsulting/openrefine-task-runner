@@ -14,9 +14,10 @@ tasks:
   default:
     desc: run workflow in batch mode
     cmds:
-      - defer: { task: stop } # will always be executed last
+      - defer: { task: cleanup } # will always be executed last
       - task: start
       - task: example
+      - task: check
     sources:
       - Taskfile.yml
       - input/**
@@ -48,17 +49,20 @@ tasks:
         "${OPENREFINE_APPDIR}/client" example \
         --output output/deduped.tsv
 
-  stop:
-      - defer: rm -rf "${OPENREFINE_TMPDIR}"
+ check:
+     - | # check log file for any warnings
+       if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
+         then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
+       fi
+
+  cleanup:
       - | # print stats and kill OpenRefine immediately
         PID="$(lsof -t -i:${OPENREFINE_PORT})"
         echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
         echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
         kill -9 $PID
-      - | # check log file for any warnings
-        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
-          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
-        fi
+      - | # delete temporary files
+        rm -rf "${OPENREFINE_TMPDIR}"
 
   install:
     desc: install OpenRefine and openrefine-client into subdirectory ${OPENREFINE_APPDIR}
