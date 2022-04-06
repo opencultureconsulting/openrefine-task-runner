@@ -14,8 +14,12 @@ jobs:
         sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
-    - name: run OpenRefine batch processing
-      run: task default
+    - name: start OpenRefine
+      run: task start
+    - name: run workflow
+      run: task example
+    - name: print stats and check log file
+      run: task check
     - uses: actions/upload-artifact@v2
       if: always()
       with:
