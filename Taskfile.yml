@@ -1,102 +1,109 @@
-# https://github.com/opencultureconsulting/openrefine-task-runner
-
 version: '3'
 
-includes:
-  example-doaj: example-doaj
-  example-duplicates: example-duplicates
-  example-powerhouse: example-powerhouse
-  # add the directory name of your project here
-
 silent: true
-output: prefixed
 
 env:
-  OPENREFINE:
-    sh: readlink -m .openrefine/refine
-  CLIENT:
-    sh: readlink -m .openrefine/client
+  OPENREFINE_MEMORY: 5120M
+  OPENREFINE_PORT: 3333
+  OPENREFINE_APPDIR:
+    sh: readlink -m .openrefine
+  OPENREFINE_TMPDIR:
+    sh: mktemp -d
 
 tasks:
   default:
-    desc: execute all projects in parallel
-    deps:
-      - task: example-doaj:refine
-      - task: example-duplicates:refine
-      - task: example-powerhouse:refine
-      # add the directory name of your project here
+    desc: run tasks start, import, transform, export, stats, check, kill and cleanup
     cmds:
-      - task: check
+      - defer: { task: cleanup } # will run even when one of the following commands fail
+      - task: start
+      - defer: { task: kill } # will run before cleanup
+      - defer: { task: check } # will run before kill
+      - defer: { task: stats } # will run before check
+      - task: import
+      - task: transform
+      - task: export
+    sources:
+      - Taskfile.yml
+      - input/**
+      - config/**
+    generates:
+      - output/**
 
   install:
-    desc: (re)install OpenRefine and openrefine-client into subdirectory .openrefine
+    desc: install OpenRefine and openrefine-client into subdirectory ${OPENREFINE_APPDIR}
     cmds:
-      - | # delete existing install and recreate folder
-        rm -rf .openrefine
-        mkdir -p .openrefine
-      - > # download OpenRefine archive
-        wget --no-verbose -O openrefine.tar.gz
-        https://github.com/OpenRefine/OpenRefine/releases/download/3.5.2/openrefine-linux-3.5.2.tar.gz
-      - | # install OpenRefine into subdirectory .openrefine
-        tar -xzf openrefine.tar.gz -C .openrefine --strip 1
-        rm openrefine.tar.gz
+      - mkdir -p "${OPENREFINE_APPDIR}"
+      - | # install OpenRefine into subdirectory ${OPENREFINE_APPDIR}
+        wget --no-verbose -O openrefine.tar.gz https://github.com/OpenRefine/OpenRefine/releases/download/3.5.2/openrefine-linux-3.5.2.tar.gz
+        tar -xzf openrefine.tar.gz -C "${OPENREFINE_APPDIR}" --strip 1 && rm openrefine.tar.gz
       - | # optimize OpenRefine for batch processing
-        sed -i 's/cd `dirname $0`/cd "$(dirname "$0")"/' ".openrefine/refine" # fix path issue in OpenRefine startup file
-        sed -i '$ a JAVA_OPTIONS=-Drefine.headless=true' ".openrefine/refine.ini" # do not try to open OpenRefine in browser
-        sed -i 's/#REFINE_AUTOSAVE_PERIOD=60/REFINE_AUTOSAVE_PERIOD=1440/' ".openrefine/refine.ini" # set autosave period from 5 minutes to 25 hours
-      - > # download openrefine-client into subdirectory .openrefine
-        wget --no-verbose -O .openrefine/client
-        https://github.com/opencultureconsulting/openrefine-client/releases/download/v0.3.10/openrefine-client_0-3-10_linux
-      - chmod +x .openrefine/client # make client executable
+        sed -i 's/cd `dirname $0`/cd "$(dirname "$0")"/' "${OPENREFINE_APPDIR}/refine" # fix path issue in OpenRefine startup file
+        sed -i '$ a JAVA_OPTIONS=-Drefine.headless=true' "${OPENREFINE_APPDIR}/refine.ini" # do not try to open OpenRefine in browser
+        sed -i 's/#REFINE_AUTOSAVE_PERIOD=60/REFINE_AUTOSAVE_PERIOD=1440/' "${OPENREFINE_APPDIR}/refine.ini" # set autosave period from 5 minutes to 25 hours
+      - | # install openrefine-client into subdirectory ${OPENREFINE_APPDIR}
+        wget --no-verbose -O "${OPENREFINE_APPDIR}/client" https://github.com/opencultureconsulting/openrefine-client/releases/download/v0.3.10/openrefine-client_0-3-10_linux
+        chmod +x "${OPENREFINE_APPDIR}/client"
 
   start:
-    dir: ./{{.DIR}}
-    cmds:
-      - | # verify that OpenRefine is installed
-        if [ ! -f "$OPENREFINE" ]; then
+      - | # requirement OpenRefine
+        if [ ! -f "${OPENREFINE_APPDIR}/refine" ]; then
           echo 1>&2 "OpenRefine missing; try task install"; exit 1
         fi
-      - | # delete temporary files and log file of previous run
-        rm -rf ./*.project* workspace.json
-        rm -rf "{{.PROJECT}}.log"
-      - > # launch OpenRefine with specific data directory and redirect its output to a log file
-        "$OPENREFINE" -v warn -p {{.PORT}} -m {{.RAM}}
-        -d ../{{.DIR}}
-        >> "{{.PROJECT}}.log" 2>&1 &
+      - | # launch OpenRefine with specific data directory and redirect its output to a log file
+        "${OPENREFINE_APPDIR}/refine" -v warn -p "$OPENREFINE_PORT" -m "$OPENREFINE_MEMORY" -d "${OPENREFINE_TMPDIR}" >> "${OPENREFINE_TMPDIR}/log.txt" 2>&1 &
       - | # wait until OpenRefine API is available
-        timeout 30s bash -c "until
-          wget -q -O - -o /dev/null http://localhost:{{.PORT}} | cat | grep -q -o OpenRefine
-          do sleep 1
-        done"
+        timeout 30s bash -c "until wget -q -O - -o /dev/null http://localhost:${OPENREFINE_PORT} | cat | grep -q -o OpenRefine; do sleep 1; done"
 
-  stop:
-    dir: ./{{.DIR}}
-    cmds:
-      - | # shut down OpenRefine gracefully
-        PID=$(lsof -t -i:{{.PORT}})
-        kill $PID
-        while ps -p $PID > /dev/null; do sleep 1; done
-      - > # archive the OpenRefine project
-        tar cfz
-        "{{.PROJECT}}.openrefine.tar.gz"
-        -C $(grep -l "{{.PROJECT}}" *.project/metadata.json | cut -d '/' -f 1)
-        .
-      - rm -rf ./*.project* workspace.json # delete temporary files
+  import:
+      - | # import (requires absolute path)
+        "${OPENREFINE_APPDIR}/client" \
+        --create "$(readlink -m input/duplicates.csv)" \
+        --projectName myproject \
+        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
 
-  kill:
-    dir: ./{{.DIR}}
-    cmds:
-      - | # shut down OpenRefine immediately to save time and disk space
-        PID=$(lsof -t -i:{{.PORT}})
-        kill -9 $PID
-        while ps -p $PID > /dev/null; do sleep 1; done
-      - rm -rf ./*.project* workspace.json # delete temporary files
+  transform:
+      - | # apply undo/redo history
+        for f in config/*.json; do
+          "${OPENREFINE_APPDIR}/client" myproject --apply "$f" \
+          > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
+        done
+
+  export:
+      - mkdir -p output
+      - | # export to TSV
+        "${OPENREFINE_APPDIR}/client" myproject \
+        --output "$(readlink -m output/deduped.tsv)" \
+        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
+
+  stats:
+      - | # print RAM and CPU usage
+        PID="$(lsof -t -i:${OPENREFINE_PORT})"
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM" \
+        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
+        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
 
   check:
-    desc: check OpenRefine log for any warnings and exit on error
-    dir: ./{{.DIR}}
-    cmds:
-      - | # find log file(s) and check for "exception" or "error"
-        if grep -i 'exception\|error' $(find . -name '*.log'); then
-          echo 1>&2 "log contains warnings!"; exit 1
+      - | # check log file for any warnings
+        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
+          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
         fi
+
+  stop:
+      - | # shut down OpenRefine gracefully
+        PID="$(lsof -t -i:${OPENREFINE_PORT})"
+        kill $PID; while ps -p $PID > /dev/null; do sleep 1; done
+
+  kill:
+      - | # shut down OpenRefine immediately to save time
+        PID="$(lsof -t -i:${OPENREFINE_PORT})"
+        kill -9 $PID
+
+  cleanup: rm -rf "${OPENREFINE_TMPDIR}"
+
+  git:
+    desc: commit and push if something changed
+    cmds:
+      - git add -A
+      - git commit -m "latest change $(date -u)" || exit 0
+      - git push

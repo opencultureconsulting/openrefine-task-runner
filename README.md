@@ -1,21 +1,20 @@
 # OpenRefine Task Runner (💎+🤖)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/main?urlpath=lab/tree/demo.ipynb)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefineder/master)
 
 Templates for OpenRefine batch processing (import, transform, export) using the task runner [go-task](https://github.com/go-task/task) and the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) to control OpenRefine via [its HTTP API](https://docs.openrefine.org/technical-reference/openrefine-api). 
 
 ## Features
 
-* run tasks in parallel
 * basic error handling by monitoring the OpenRefine server log
-* dedicated OpenRefine instances for each task (your existing OpenRefine data will not be touched)
+* dedicated OpenRefine instance with temporary workspace (your existing OpenRefine data will not be touched)
 * prevent unnecessary work by fingerprinting generated files and their sources
 * the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) used here supports many core features of OpenRefine:
   * import CSV, TSV, line-based TXT, fixed-width TXT, JSON or XML (and specify input options)
   * apply [undo/redo history](https://docs.openrefine.org/manual/running/#reusing-operations) from given JSON file(s)
   * export to CSV, TSV, HTML, XLS, XLSX, ODS
   * [templating export](https://github.com/opencultureconsulting/openrefine-client#templating) to additional formats like JSON or XML
-  * works with OpenRefine 2.7, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.4.1 and 3.5
+  * works with OpenRefine 2.7, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4 and 3.5
 * tasks are easy to extend with additional commands (e.g. to download input data or validate results)
 
 ## Typical workflow
@@ -26,10 +25,10 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 **Possible automation benefits:**
 
-* When you receive updated data (in the same structure), you just need to drop the file and start the task like this:
+* When you receive updated data (in the same structure), you just need to drop the input file and start the task like this:
 
   ```sh
-  task example-doaj
+  task
   ```
 
 * The entire data processing (including options during import) becomes reproducible. The task configuration file can also be used for documentation through source code comments.
@@ -38,18 +37,17 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 ## Requirements
 
-* GNU/Linux (tested with Fedora 32)
+* GNU/Linux (tested with Fedora 34)
 * JAVA 8+ (for OpenRefine)
 
 ## Demo via binder
 
-[![Binder](https://notebooks.gesis.org/binder/badge_logo.svg)](https://notebooks.gesis.org/binder/v2/gh/opencultureconsulting/openrefine-task-runner/main?urlpath=lab/tree/demo.ipynb)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefineder/master)
 
 - free to use on-demand server with Jupyterlab and Bash Kernel
 - OpenRefine, openrefine-client and go-task [preinstalled](binder/postBuild)
 - no registration needed, will start within a few minutes
-- [restricted](https://notebooks.gesis.org/faq/) to 4 GB RAM and server will be deleted after 10 minutes of inactivity
-- service is provided by GESIS and is intended for use by social scientists
+- [restricted](https://mybinder.readthedocs.io/en/latest/about/about.html#how-much-memory-am-i-given-when-using-binder) to 2 GB RAM and server will be deleted after 10 minutes of inactivity
 
 ## Install
 
@@ -60,7 +58,7 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
     cd openrefine-task-runner
     ```
 
-2. Install [Task 3.10.0](https://github.com/go-task/task/releases/tag/v3.10.0)
+2. Install [Task 3.10.0](https://github.com/go-task/task/releases/tag/v3.10.0)+
 
     a) RPM-based (Fedora, CentOS, SLES, etc.)
 
@@ -84,34 +82,28 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 ## Usage
 
-* Run all tasks in parallel
+* Run default task (start, import, transform, export, stats, check, kill and cleanup)
 
     ```sh
-    task
+    task default
     ```
 
-* Run a specific task
+* Override settings with environment variables
 
     ```sh
-    task example-duplicates:main
-    ```
-
-* Run some tasks in parallel
-
-    ```sh
-    task --parallel example-duplicates:main example-doaj:main
+    OPENREFINE_MEMORY=2000M OPENREFINE_PORT=3334 task default
     ```
 
 * Force run a task even when the task is up-to-date
 
     ```sh
-    task example-duplicates:main --force
+    task default --force
     ```
 
 * Dry-run in verbose mode for debugging
 
     ```sh
-    task example-duplicates:main --dry --verbose --force
+    task default --dry --verbose --force
     ```
 
 * List available tasks
@@ -120,17 +112,9 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
     task --list
     ```
 
-### How to develop your own tasks
+### Examples
 
-(first draft, will be elaborated later)
-
-1. create a new folder
-2. copy an example Taskfile.yml
-3. provide input data in subdirectory input
-4. provide OpenRefine transformation history files in subdirectory config
-5. add commands to specific Taskfile (check openrefine-client help screen for available options: `openrefine/client --help`)
-6. add project to general Taskfile
-7. check memory load and increase RAM if needed
+* [noah-biejournals](https://github.com/opencultureconsulting/noah-biejournals): Harvesting des Zeitschriftenservers BieJournals der UB Bielefeld und Transformation in METS/MODS für das Portal noah.nrw 
 
 ### Getting help
 

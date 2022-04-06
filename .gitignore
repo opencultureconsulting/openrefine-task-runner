@@ -1,9 +1,2 @@
 .task
 .openrefine
-*/output
-*/*.log
-*/*.openrefine.tar.gz
-example-doaj/input
-example-doaj/config
-example-powerhouse/input
-example-powerhouse/config
