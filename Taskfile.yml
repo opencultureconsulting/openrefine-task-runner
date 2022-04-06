@@ -50,16 +50,18 @@ tasks:
         --output output/deduped.tsv
 
   check:
+     - | # print stats
+        PID="$(lsof -t -i:${OPENREFINE_PORT})"
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
      - | # check log file for any warnings
        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
        fi
 
   cleanup:
-      - | # print stats and kill OpenRefine immediately
+      - | # kill OpenRefine immediately
         PID="$(lsof -t -i:${OPENREFINE_PORT})"
-        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
-        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
         kill -9 $PID
       - | # delete temporary files
         rm -rf "${OPENREFINE_TMPDIR}"
