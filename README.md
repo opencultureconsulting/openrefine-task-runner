@@ -15,7 +15,7 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
   * apply [undo/redo history](https://docs.openrefine.org/manual/running/#reusing-operations) from given JSON file(s)
   * export to CSV, TSV, HTML, XLS, XLSX, ODS
   * [templating export](https://github.com/opencultureconsulting/openrefine-client#templating) to additional formats like JSON or XML
-  * works with OpenRefine 2.7, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.4.1 and 3.5.0
+  * works with OpenRefine 2.7, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.4.1 and 3.5
 * tasks are easy to extend with additional commands (e.g. to download input data or validate results)
 
 ## Typical workflow
@@ -76,7 +76,7 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
     sudo apt install ./task_linux_amd64.deb && rm task_linux_amd64.deb
     ```
 
-3. Run install task to download [OpenRefine 3.5.0](https://github.com/OpenRefine/OpenRefine/releases/tag/3.5.0) and [openrefine-client 0.3.10](https://github.com/opencultureconsulting/openrefine-client/releases/tag/v0.3.10)
+3. Run install task to download [OpenRefine 3.5.2](https://github.com/OpenRefine/OpenRefine/releases/tag/3.5.2) and [openrefine-client 0.3.10](https://github.com/opencultureconsulting/openrefine-client/releases/tag/v0.3.10)
 
    ```sh
    task install
