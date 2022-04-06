@@ -25,7 +25,7 @@
     },
     "newColumnName": "count",
     "columnInsertIndex": 1,
-    "baseColumnName": "emailFALSE",
+    "baseColumnName": "email",
     "expression": "grel:facetCount(value, \"value\", \"email\")",
     "onError": "set-to-blank"
   },
