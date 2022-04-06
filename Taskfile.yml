@@ -49,7 +49,7 @@ tasks:
         "${OPENREFINE_APPDIR}/client" example \
         --output output/deduped.tsv
 
- check:
+  check:
      - | # check log file for any warnings
        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
