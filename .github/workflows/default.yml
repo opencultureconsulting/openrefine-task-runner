@@ -1,4 +1,4 @@
-name: example
+name: default
 
 on:
   workflow_dispatch: # allows you to run this workflow manually from the Actions tab
@@ -14,23 +14,8 @@ jobs:
         sudo tar -xzf task.tar.gz -C /usr/local/bin task && rm task.tar.gz
     - name: install OpenRefine and openrefine-client
       run: task install
-    - name: start OpenRefine
-      run: task start
-    - name: import
-      run: task import
-    - name: transform
-      run: task transform
-    - name: export
-      run: task export
-    - name: print stats
-      if: always()
-      run: task stats
-    - name: check log file
-      if: always()
-      run: task check
-    - name: stop OpenRefine
-      if: always()
-      run: task stop
+    - name: run OpenRefine batch processing
+      run: task default
     - uses: actions/upload-artifact@v2
       if: always()
       with:

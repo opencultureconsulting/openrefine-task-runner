@@ -8,26 +8,57 @@ env:
   OPENREFINE_APPDIR:
     sh: readlink -m .openrefine
   OPENREFINE_TMPDIR:
-    sh: mktemp -d
+    sh: mkdir -p .openrefine/tmp; readlink -m .openrefine/tmp
 
 tasks:
   default:
-    desc: run tasks start, import, transform, export, stats, check, kill and cleanup
+    desc: run workflow in batch mode
     cmds:
-      - defer: { task: cleanup } # will run even when one of the following commands fail
+      - defer: { task: stop } # will always be executed last
       - task: start
-      - defer: { task: kill } # will run before cleanup
-      - defer: { task: check } # will run before kill
-      - defer: { task: stats } # will run before check
-      - task: import
-      - task: transform
-      - task: export
+      - task: example
     sources:
       - Taskfile.yml
       - input/**
       - config/**
     generates:
       - output/**
+    preconditions:
+      - sh: test -f "${OPENREFINE_APPDIR}/refine"
+        msg: "OpenRefine missing; try task install"
+
+  start:
+      - echo "start OpenRefine with max. $OPENREFINE_MEMORY on port $OPENREFINE_PORT..."
+      - | # launch OpenRefine with specific data directory and redirect its output to a log file
+        "${OPENREFINE_APPDIR}/refine" -v warn -p "$OPENREFINE_PORT" -m "$OPENREFINE_MEMORY" -d "${OPENREFINE_TMPDIR}" > "${OPENREFINE_TMPDIR}/log.txt" 2>&1 &
+      - | # wait until OpenRefine API is available
+        timeout 30s bash -c "until wget -q -O - -o /dev/null http://localhost:${OPENREFINE_PORT} | cat | grep -q -o OpenRefine; do sleep 1; done"
+
+  example:
+      - | # import (requires absolute path)
+        "${OPENREFINE_APPDIR}/client" \
+        --create "$(readlink -m input/duplicates.csv)" \
+        --projectName example
+      - | # apply undo/redo history
+        for f in config/*.json; do
+          "${OPENREFINE_APPDIR}/client" example --apply "$f"
+        done
+      - | # export to TSV
+        mkdir -p output
+        "${OPENREFINE_APPDIR}/client" example \
+        --output output/deduped.tsv
+
+  stop:
+      - defer: rm -rf "${OPENREFINE_TMPDIR}"
+      - | # print stats and kill OpenRefine immediately
+        PID="$(lsof -t -i:${OPENREFINE_PORT})"
+        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM"
+        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time"
+        kill -9 $PID
+      - | # check log file for any warnings
+        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
+          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
+        fi
 
   install:
     desc: install OpenRefine and openrefine-client into subdirectory ${OPENREFINE_APPDIR}
@@ -43,63 +74,6 @@ tasks:
       - | # install openrefine-client into subdirectory ${OPENREFINE_APPDIR}
         wget --no-verbose -O "${OPENREFINE_APPDIR}/client" https://github.com/opencultureconsulting/openrefine-client/releases/download/v0.3.10/openrefine-client_0-3-10_linux
         chmod +x "${OPENREFINE_APPDIR}/client"
-
-  start:
-      - | # requirement OpenRefine
-        if [ ! -f "${OPENREFINE_APPDIR}/refine" ]; then
-          echo 1>&2 "OpenRefine missing; try task install"; exit 1
-        fi
-      - | # launch OpenRefine with specific data directory and redirect its output to a log file
-        "${OPENREFINE_APPDIR}/refine" -v warn -p "$OPENREFINE_PORT" -m "$OPENREFINE_MEMORY" -d "${OPENREFINE_TMPDIR}" >> "${OPENREFINE_TMPDIR}/log.txt" 2>&1 &
-      - | # wait until OpenRefine API is available
-        timeout 30s bash -c "until wget -q -O - -o /dev/null http://localhost:${OPENREFINE_PORT} | cat | grep -q -o OpenRefine; do sleep 1; done"
-
-  import:
-      - | # import (requires absolute path)
-        "${OPENREFINE_APPDIR}/client" \
-        --create "$(readlink -m input/duplicates.csv)" \
-        --projectName myproject \
-        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
-
-  transform:
-      - | # apply undo/redo history
-        for f in config/*.json; do
-          "${OPENREFINE_APPDIR}/client" myproject --apply "$f" \
-          > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
-        done
-
-  export:
-      - mkdir -p output
-      - | # export to TSV
-        "${OPENREFINE_APPDIR}/client" myproject \
-        --output "$(readlink -m output/deduped.tsv)" \
-        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
-
-  stats:
-      - | # print RAM and CPU usage
-        PID="$(lsof -t -i:${OPENREFINE_PORT})"
-        echo "used $(($(ps --no-headers -o rss -p "$PID") / 1024)) MB RAM" \
-        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
-        echo "used $(ps --no-headers -o cputime -p "$PID") CPU time" \
-        > >(tee -a "${OPENREFINE_TMPDIR}/log.txt") 2>&1
-
-  check:
-      - | # check log file for any warnings
-        if grep -i 'exception\|error' "${OPENREFINE_TMPDIR}/log.txt"
-          then echo 1>&2 "log contains warnings!"; echo; cat "${OPENREFINE_TMPDIR}/log.txt"; exit 1
-        fi
-
-  stop:
-      - | # shut down OpenRefine gracefully
-        PID="$(lsof -t -i:${OPENREFINE_PORT})"
-        kill $PID; while ps -p $PID > /dev/null; do sleep 1; done
-
-  kill:
-      - | # shut down OpenRefine immediately to save time
-        PID="$(lsof -t -i:${OPENREFINE_PORT})"
-        kill -9 $PID
-
-  cleanup: rm -rf "${OPENREFINE_TMPDIR}"
 
   git:
     desc: commit and push if something changed

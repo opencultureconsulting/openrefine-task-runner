@@ -1,8 +1,10 @@
 # OpenRefine Task Runner (💎+🤖)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefineder/master)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/888dbf663fdd409e8d8fcf8472114194)](https://www.codacy.com/gh/opencultureconsulting/openrefine-task-runner/dashboard) [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefine-task-runner/main)
 
-Templates for OpenRefine batch processing (import, transform, export) using the task runner [go-task](https://github.com/go-task/task) and the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) to control OpenRefine via [its HTTP API](https://docs.openrefine.org/technical-reference/openrefine-api). 
+Templates for OpenRefine batch processing (import, transform, export) using the task runner [go-task](https://github.com/go-task/task) and the [openrefine-client](https://github.com/opencultureconsulting/openrefine-client) to control OpenRefine via [its HTTP API](https://docs.openrefine.org/technical-reference/openrefine-api).
+
+The workflow is defined in [Taskfile.yml](Taskfile.yml) and can be executed either locally (`task default`) or with [GitHub Actions](.github/workflows/default.yml).
 
 ## Features
 
@@ -16,6 +18,11 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
   * [templating export](https://github.com/opencultureconsulting/openrefine-client#templating) to additional formats like JSON or XML
   * works with OpenRefine 2.7, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4 and 3.5
 * tasks are easy to extend with additional commands (e.g. to download input data or validate results)
+
+## Requirements
+
+* GNU/Linux (tested with Fedora 34)
+* JAVA 8+ (for OpenRefine)
 
 ## Typical workflow
 
@@ -35,14 +42,9 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 * Metadata experts can use OpenRefine's graphical interface and IT staff can incorporate the created transformation rules into regular data processing flows.
 
-## Requirements
-
-* GNU/Linux (tested with Fedora 34)
-* JAVA 8+ (for OpenRefine)
-
 ## Demo via binder
 
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefineder/master)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/felixlohmeier/openrefine-task-runner/main)
 
 - free to use on-demand server with Jupyterlab and Bash Kernel
 - OpenRefine, openrefine-client and go-task [preinstalled](binder/postBuild)
@@ -82,7 +84,7 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
 
 ## Usage
 
-* Run default task (start, import, transform, export, stats, check, kill and cleanup)
+* Run workflow
 
     ```sh
     task default
