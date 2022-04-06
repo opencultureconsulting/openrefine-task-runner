@@ -60,19 +60,19 @@ Templates for OpenRefine batch processing (import, transform, export) using the 
     cd openrefine-task-runner
     ```
 
-2. Install [Task 3.2.2](https://github.com/go-task/task/releases/tag/v3.2.2)
+2. Install [Task 3.10.0](https://github.com/go-task/task/releases/tag/v3.10.0)
 
     a) RPM-based (Fedora, CentOS, SLES, etc.)
 
     ```sh
-    wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.rpm
+    wget https://github.com/go-task/task/releases/download/v3.10.0/task_linux_amd64.rpm
     sudo dnf install ./task_linux_amd64.rpm && rm task_linux_amd64.rpm
     ```
 
     b) DEB-based (Debian, Ubuntu etc.)
 
     ```sh
-    wget https://github.com/go-task/task/releases/download/v3.2.2/task_linux_amd64.deb
+    wget https://github.com/go-task/task/releases/download/v3.10.0/task_linux_amd64.deb
     sudo apt install ./task_linux_amd64.deb && rm task_linux_amd64.deb
     ```
 
