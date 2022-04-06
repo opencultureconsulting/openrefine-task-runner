@@ -20,7 +20,7 @@ jobs:
       if: always()
       with:
         name: OpenRefine project and logfile
-        path: .openrefine/data
+        path: .openrefine/tmp
         retention-days: 7
     - name: git commit and push
       run: |
